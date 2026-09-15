@@ -163,22 +163,34 @@ AGENTTEAMS_LLM_PROVIDER=openai-compat \
 AGENTTEAMS_OPENAI_BASE_URL=<your-openai-compatible-base-url> \
 AGENTTEAMS_DEFAULT_MODEL=<your-model-id> \
 AGENTTEAMS_LLM_API_KEY=<your-api-key> \
+AGENTTEAMS_EMBEDDING_MODEL= \
 AGENTTEAMS_INSTALL_EMBEDDED_IMAGE=${HARBOR}/agentteams-embedded:v1.2.3 \
 AGENTTEAMS_INSTALL_MANAGER_QWENPAW_IMAGE=${HARBOR}/agentteams-manager-qwenpaw:v1.2.3 \
 AGENTTEAMS_INSTALL_WORKER_IMAGE=${HARBOR}/agentteams-worker:v1.2.3 \
 AGENTTEAMS_INSTALL_COPAW_WORKER_IMAGE=${HARBOR}/agentteams-copaw-worker:v1.2.3 \
 AGENTTEAMS_INSTALL_QWENPAW_WORKER_IMAGE=${HARBOR}/agentteams-qwenpaw-worker:v1.2.3 \
 AGENTTEAMS_INSTALL_HERMES_WORKER_IMAGE=${HARBOR}/agentteams-hermes-worker:v1.2.3 \
+AGENTTEAMS_DASHBOARD_IMAGE=${HARBOR}/agentteams-dashboard:v1.2.4 \
 bash install/agentteams-install.sh
 ```
 
+Two easy-to-miss gaps if you drop either of these from the command above:
+
+- **`AGENTTEAMS_DASHBOARD_IMAGE`** — the Dashboard is enabled by default (`AGENTTEAMS_DASHBOARD=1`) and isn't covered by any of the other overrides, so without it the installer still reaches out to the default Aliyun ACR registry for `agentteams-dashboard`, defeating the point of mirroring everything else. Either set this override or pass `AGENTTEAMS_DASHBOARD=0` to skip it entirely.
+- **`AGENTTEAMS_EMBEDDING_MODEL=`** (left empty) — the default (`text-embedding-v4`) is an Alibaba-specific model id. Leaving it unset just wastes a failed connectivity probe against a provider that doesn't have that model (non-fatal — the installer auto-disables embeddings and continues — but there's no reason to hit it).
+
 `AGENTTEAMS_INSTALL_EMBEDDED_IMAGE` also fully bypasses the installer's
-registry auto-detection for the core controller image, so this path never
-touches Alibaba Cloud at all. Any OpenAI-compatible LLM endpoint works for
-`AGENTTEAMS_OPENAI_BASE_URL` (verified against NVIDIA NIM's
-`https://integrate.api.nvidia.com/v1`, in addition to the built-in
+registry auto-detection for the core controller image. Any OpenAI-compatible
+LLM endpoint works for `AGENTTEAMS_OPENAI_BASE_URL` (verified against NVIDIA
+NIM's `https://integrate.api.nvidia.com/v1`, in addition to the built-in
 Alibaba/OpenAI providers) — just make sure `AGENTTEAMS_DEFAULT_MODEL` is a
 model id your provider actually serves.
+
+Three things outside this command that also need to be true for it to actually work:
+
+1. **Use this fork's `install/agentteams-install.sh`** (with the `sync_openai_compat_provider()` fix below), not a fresh copy of the upstream script — matters most if you ever re-run this as an *upgrade* rather than a fresh install.
+2. **`docker login` to your Harbor/proxy registry before running this** — the command above assumes the Docker daemon can already authenticate; it doesn't handle registry credentials itself.
+3. **Start from a clean host** — if `~/agentteams-manager.env` already exists from a previous attempt, the installer detects an existing install and switches to its upgrade flow instead of a fresh install, which behaves differently.
 
 ### Known issue: switching providers on an existing install
 
