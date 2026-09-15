@@ -91,6 +91,96 @@ Open http://127.0.0.1:18088 in your browser and log in to Element Web. The Manag
 
 **That's it.** No bot applications. No external services. Your AI team runs entirely on your machine.
 
+## Corporate / Restricted-Network Deployment
+
+The default installer pulls every image from Alibaba Cloud Container Registry
+(`higress-registry.{cn-hangzhou,us-west-1,ap-southeast-7}.cr.aliyuncs.com`).
+If your network can't reach that registry directly (common behind a
+corporate proxy that only allows pulls through an internal Harbor/Artifactory
+mirror), mirror the images yourself and point the installer at your mirror
+with per-image overrides — no source changes needed.
+
+### 1. Mirror the required images
+
+On a machine that *can* reach the registry, pull, retag, and push each image
+to your own registry (Docker Hub, private Harbor, etc.). At minimum you need
+`agentteams-embedded`, the Manager image for your chosen runtime (default:
+`agentteams-manager-qwenpaw`), and `agentteams-worker`; mirror the other
+Worker runtime variants (`agentteams-copaw-worker`,
+`agentteams-qwenpaw-worker`, `agentteams-hermes-worker`) too if you're
+pinning to a version where the installer pulls them unconditionally (see
+`resolve_image_tags()` / `_pull_image()` in `install/agentteams-install.sh`).
+
+```bash
+SRC=higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams
+DST=<your-registry-namespace>   # e.g. a Docker Hub username, or harbor.company.com/dockerhub-proxy/<ns>
+V=v1.2.3
+
+for name in agentteams-embedded agentteams-manager-qwenpaw agentteams-worker \
+            agentteams-copaw-worker agentteams-qwenpaw-worker agentteams-hermes-worker; do
+  docker pull "${SRC}/${name}:${V}"
+  docker tag  "${SRC}/${name}:${V}" "${DST}/${name}:${V}"
+  docker push "${DST}/${name}:${V}"
+done
+```
+
+If your organization's registry proxy pulls through Docker Hub by prefixing
+your namespace onto the original image path (e.g.
+`harbor.company.com/dockerhub-proxy/<ns>/<image>:<tag>`), point
+`AGENTTEAMS_INSTALL_*_IMAGE` at that full path instead of your registry
+directly — no extra config needed as long as the proxy project's upstream
+matches where you pushed.
+
+### 2. Install with per-image overrides
+
+```bash
+HARBOR=<your-registry-or-proxy-path>   # e.g. harbor.company.com/dockerhub-proxy/<ns>
+
+AGENTTEAMS_NON_INTERACTIVE=1 \
+AGENTTEAMS_VERSION=v1.2.3 \
+AGENTTEAMS_LLM_PROVIDER=openai-compat \
+AGENTTEAMS_OPENAI_BASE_URL=<your-openai-compatible-base-url> \
+AGENTTEAMS_DEFAULT_MODEL=<your-model-id> \
+AGENTTEAMS_LLM_API_KEY=<your-api-key> \
+AGENTTEAMS_INSTALL_EMBEDDED_IMAGE=${HARBOR}/agentteams-embedded:v1.2.3 \
+AGENTTEAMS_INSTALL_MANAGER_QWENPAW_IMAGE=${HARBOR}/agentteams-manager-qwenpaw:v1.2.3 \
+AGENTTEAMS_INSTALL_WORKER_IMAGE=${HARBOR}/agentteams-worker:v1.2.3 \
+AGENTTEAMS_INSTALL_COPAW_WORKER_IMAGE=${HARBOR}/agentteams-copaw-worker:v1.2.3 \
+AGENTTEAMS_INSTALL_QWENPAW_WORKER_IMAGE=${HARBOR}/agentteams-qwenpaw-worker:v1.2.3 \
+AGENTTEAMS_INSTALL_HERMES_WORKER_IMAGE=${HARBOR}/agentteams-hermes-worker:v1.2.3 \
+bash install/agentteams-install.sh
+```
+
+`AGENTTEAMS_INSTALL_EMBEDDED_IMAGE` also fully bypasses the installer's
+registry auto-detection for the core controller image, so this path never
+touches Alibaba Cloud at all. Any OpenAI-compatible LLM endpoint works for
+`AGENTTEAMS_OPENAI_BASE_URL` (verified against NVIDIA NIM's
+`https://integrate.api.nvidia.com/v1`, in addition to the built-in
+Alibaba/OpenAI providers) — just make sure `AGENTTEAMS_DEFAULT_MODEL` is a
+model id your provider actually serves.
+
+### Known issue: switching providers on an existing install
+
+If you change `AGENTTEAMS_OPENAI_BASE_URL` / `AGENTTEAMS_DEFAULT_MODEL` on
+an **upgrade** of an already-installed deployment (rather than a fresh
+install), the Higress `WasmPlugin` (ai-proxy) config updates correctly, but
+the underlying `McpBridge` registry entry that actually resolves the
+upstream DNS host — and the Manager CR's `spec.model` — can be left stale,
+silently routing requests to the *previous* provider. The welcome-message
+probe just retries against the wrong upstream until
+`AGENTTEAMS_WELCOME_TIMEOUT` and the install still reports success. This
+build of `install/agentteams-install.sh` includes a
+`sync_openai_compat_provider()` workaround that detects and corrects both
+after every install/upgrade run; if you're working from an unpatched copy,
+either do a fresh `make uninstall && ` reinstall instead of an upgrade when
+switching providers, or fix it manually:
+
+```bash
+docker exec agentteams-controller agt update manager --name default --model <new-model-id>
+# then PATCH the McpBridge "openai-compat" registry's domain to the new
+# provider's hostname via the embedded API at https://localhost:18443
+```
+
 ## Upgrade
 
 ```bash
