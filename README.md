@@ -56,13 +56,13 @@ There's also a separate `agentteams-embedded` vs. the individual `agentteams-man
 - **2026-07-30**: [Release Notes](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.2.0) — AgentTeams v1.2.0 (stable): establishes AgentTeams naming and the final Team/Worker resource contracts end to end; adds the optional AgentTeams Dashboard; and improves Worker storage sync, Team routing and lifecycle convergence, installer support for deploying v1.1.2 with its legacy environment and storage contract (earlier releases still require the matching legacy installer), Dashboard reliability, and tooling and diagnostic safety.
 - **2026-07-17**: [Release Notes](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.2.0-beta.1) — AgentTeams v1.2.0-beta.1 (prerelease): completes the public rename from the retired predecessor across images, Kubernetes APIs, Helm, Matrix, storage, and runtime contracts; adds the plugin platform, TeamHarness and WorkerFlow integrations, Matrix AppService and Human SSO, model-provider routing and LLM preflight, plus richer controller observability. Beta installation requires explicit opt-in, while the stable default remains v1.1.2.
 - **2026-05-27**: [Release Notes](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.1.2) — AgentTeams v1.1.2: QwenPaw-first installer with keep-all upgrade flow, Team human coordinators and refreshed Team Leader coordination tools, Nacos remote skills with `sts-agentteams` / `ai-registry` STS scope, Worker CR-name decoupled from runtime name, controller reconcile metrics and graceful shutdown.
-- **2026-05-07**: [Release Notes](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.1.1) | [Changelog](changelog/v1.1.1.md) — AgentTeams v1.1.1: declarative MCP on Worker/Manager/Team CRDs (breaking) and on Team Leader, custom `spec.env` for CRs, Token Plan + Qwen Cloud international + `qwen3.6-plus`, namespace-scoped controller RBAC, optional `SOUL.md` in Worker packages.
-- **2026-04-24**: [English](blog/agentteams-1.1.0-release.md) | [中文](blog/zh-cn/agentteams-1.1.0-release.md) — AgentTeams v1.1.0: Kubernetes-native control plane, Hermes autonomous coding agent runtime, 1.7 GB image shrink, agt CLI replaces shell scripts.
-- **2026-04-14**: [English](blog/agentteams-k8s-native-multi-agent-collaboration.md) | [中文](blog/zh-cn/agentteams-k8s-native-multi-agent-collaboration.zh-CN.md) — Deep dive: AgentTeams as a Kubernetes-native multi-agent collaboration orchestration system.
-- **2026-04-03**: [English](docs/usage/resource-management.md) | [中文](docs/zh-cn/usage/resource-management.md) — AgentTeams 1.0.9: Kubernetes-style declarative resource management (YAML for Worker, Team, Human); Worker Template Marketplace; Manager QwenPaw runtime; Nacos Skills Registry and more.
-- **2026-03-14**: [English](blog/agentteams-1.0.6-release.md) | [中文](blog/zh-cn/agentteams-1.0.6-release.md) — AgentTeams 1.0.6: enterprise-grade MCP Server management, zero credential exposure.
-- **2026-03-10**: [English](blog/agentteams-1.0.4-release.md) | [中文](blog/zh-cn/agentteams-1.0.4-release.md) — AgentTeams 1.0.4: QwenPaw (formerly CoPaw) Worker support, 80% less memory.
-- **2026-03-04**: [English](blog/agentteams-announcement.md) | [中文](blog/zh-cn/agentteams-announcement.md) — AgentTeams open sourced under its former name.
+- **2026-05-07**: [Release Notes](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.1.1) | [Changelog](https://github.com/agentscope-ai/AgentTeams/blob/main/changelog/v1.1.1.md) — AgentTeams v1.1.1: declarative MCP on Worker/Manager/Team CRDs (breaking) and on Team Leader, custom `spec.env` for CRs, Token Plan + Qwen Cloud international + `qwen3.6-plus`, namespace-scoped controller RBAC, optional `SOUL.md` in Worker packages.
+- **2026-04-24**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/agentteams-1.1.0-release.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/zh-cn/agentteams-1.1.0-release.md) — AgentTeams v1.1.0: Kubernetes-native control plane, Hermes autonomous coding agent runtime, 1.7 GB image shrink, agt CLI replaces shell scripts.
+- **2026-04-14**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/agentteams-k8s-native-multi-agent-collaboration.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/zh-cn/agentteams-k8s-native-multi-agent-collaboration.zh-CN.md) — Deep dive: AgentTeams as a Kubernetes-native multi-agent collaboration orchestration system.
+- **2026-04-03**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/resource-management.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/zh-cn/usage/resource-management.md) — AgentTeams 1.0.9: Kubernetes-style declarative resource management (YAML for Worker, Team, Human); Worker Template Marketplace; Manager QwenPaw runtime; Nacos Skills Registry and more.
+- **2026-03-14**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/agentteams-1.0.6-release.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/zh-cn/agentteams-1.0.6-release.md) — AgentTeams 1.0.6: enterprise-grade MCP Server management, zero credential exposure.
+- **2026-03-10**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/agentteams-1.0.4-release.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/zh-cn/agentteams-1.0.4-release.md) — AgentTeams 1.0.4: QwenPaw (formerly CoPaw) Worker support, 80% less memory.
+- **2026-03-04**: [English](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/agentteams-announcement.md) | [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/blog/zh-cn/agentteams-announcement.md) — AgentTeams open sourced under its former name.
 
 ## Why AgentTeams
 
@@ -228,7 +228,7 @@ This removes all AgentTeams containers (Manager, Workers, docker-proxy), Docker 
 
 For shared / production deployments you can install AgentTeams on any Kubernetes cluster via the official Helm chart. The default profile bundles the Higress AI gateway, Tuwunel (Matrix), MinIO and the AgentTeams controller — no external dependencies required.
 
-The commands below provide a quick installation path. See the [Kubernetes Deployment Guide](docs/usage/deployment/kubernetes.md) for cluster planning, values files, model services, runtimes, persistence, Ingress, and operations.
+The commands below provide a quick installation path. See the [Kubernetes Deployment Guide](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/deployment/kubernetes.md) for cluster planning, values files, model services, runtimes, persistence, Ingress, and operations.
 
 **Prerequisites**
 
@@ -337,7 +337,7 @@ Images point to the China region by default. When deploying outside China, use a
 | North America | `higress-registry.us-west-1.cr.aliyuncs.com/higress` |
 | Southeast Asia | `higress-registry.ap-southeast-7.cr.aliyuncs.com/higress` |
 
-`global.imageRegistry` affects only subcharts that consume that global value. The Controller, Manager, Workers, Tuwunel, MinIO, and Element Web use their own complete `image.repository` values. Override every relevant image in a values file when switching regions or using a private registry. See the [Kubernetes Deployment Guide](docs/usage/deployment/kubernetes.md) and [`helm/agentteams/values.yaml`](helm/agentteams/values.yaml) for the complete configuration.
+`global.imageRegistry` affects only subcharts that consume that global value. The Controller, Manager, Workers, Tuwunel, MinIO, and Element Web use their own complete `image.repository` values. Override every relevant image in a values file when switching regions or using a private registry. See the [Kubernetes Deployment Guide](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/deployment/kubernetes.md) and [`helm/agentteams/values.yaml`](helm/agentteams/values.yaml) for the complete configuration.
 
 **Access**
 
@@ -421,7 +421,7 @@ helm uninstall agentteams -n agentteams-system
 kubectl delete namespace agentteams-system
 ```
 
-For the Kubernetes-native architecture (CRDs, controller, declarative `Worker` / `Team` / `Human` resources), see [docs/design/k8s-native-orchestration.md](docs/design/k8s-native-orchestration.md).
+For the Kubernetes-native architecture (CRDs, controller, declarative `Worker` / `Team` / `Human` resources), see [docs/design/k8s-native-orchestration.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/design/k8s-native-orchestration.md).
 
 ## How It Works
 
@@ -531,19 +531,19 @@ Worker Alice    Worker Bob              Worker Charlie
 
 ## Documentation
 
-Browse the [documentation directory](docs/), or start with the overview and quickstart:
+`docs/` isn't included in this deploy-only checkout (see [Container Images](#container-images) / the repo-slimming commit history). Browse the [documentation directory on the upstream repo](https://github.com/agentscope-ai/AgentTeams/tree/main/docs), or start with the overview and quickstart:
 
 | | |
 |---|---|
-| [docs/overview.md](docs/overview.md) | Product overview, core concepts, and documentation map |
-| [docs/quickstart.md](docs/quickstart.md) | Step-by-step guide |
-| [docs/usage/use-cases.md](docs/usage/use-cases.md) | Software delivery, research, content, incident analysis, and long-running project collaboration examples |
-| [docs/usage/deployment/local.md](docs/usage/deployment/local.md) | Local instance creation, installation options, upgrades, and uninstalling |
-| [docs/design/architecture.md](docs/design/architecture.md) | System architecture deep dive |
-| [docs/usage/manager-guide.md](docs/usage/manager-guide.md) | Manager configuration |
-| [docs/usage/worker-guide.md](docs/usage/worker-guide.md) | Worker deployment |
-| [docs/usage/project-workflow-api.md](docs/usage/project-workflow-api.md) | Project / workflow inspection API (also available in [中文](docs/zh-cn/usage/project-workflow-api.md)) |
-| [docs/usage/development.md](docs/usage/development.md) | Contributing and local dev |
+| [docs/overview.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/overview.md) | Product overview, core concepts, and documentation map |
+| [docs/quickstart.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/quickstart.md) | Step-by-step guide |
+| [docs/usage/use-cases.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/use-cases.md) | Software delivery, research, content, incident analysis, and long-running project collaboration examples |
+| [docs/usage/deployment/local.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/deployment/local.md) | Local instance creation, installation options, upgrades, and uninstalling |
+| [docs/design/architecture.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/design/architecture.md) | System architecture deep dive |
+| [docs/usage/manager-guide.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/manager-guide.md) | Manager configuration |
+| [docs/usage/worker-guide.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/worker-guide.md) | Worker deployment |
+| [docs/usage/project-workflow-api.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/project-workflow-api.md) | Project / workflow inspection API (also available in [中文](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/zh-cn/usage/project-workflow-api.md)) |
+| [docs/usage/development.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/development.md) | Contributing and local dev |
 
 ## Troubleshooting
 
@@ -551,7 +551,7 @@ Browse the [documentation directory](docs/), or start with the overview and quic
 docker exec -it agentteams-manager cat /var/log/agentteams/manager-agent.log
 ```
 
-See [docs/usage/troubleshooting/faq.md](docs/usage/troubleshooting/faq.md) for common issues.
+See [docs/usage/troubleshooting/faq.md](https://github.com/agentscope-ai/AgentTeams/blob/main/docs/usage/troubleshooting/faq.md) for common issues.
 
 ### Reporting Bugs
 
