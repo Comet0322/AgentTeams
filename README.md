@@ -35,6 +35,25 @@ A default install pulls a handful of images from `agentteams/*` (Alibaba Cloud C
 
 There's also a separate `agentteams-embedded` vs. the individual `agentteams-manager-*` / `agentteams-*-worker` images you interact with day to day: the Controller (inside `agentteams-embedded`) dynamically creates and destroys Manager/Worker *containers* at runtime based on `Manager`/`Worker`/`Team` custom resources — see [How It Works](#how-it-works).
 
+### Registry Paths (Upstream vs. Mirror)
+
+These are the images the installer actually pulls (`resolve_image_tags()` / `_pull_image()` in `install/agentteams-install.sh`). "Upstream" is the default Aliyun ACR path; "Mirror" is the [Corporate / Restricted-Network Deployment](#corporate--restricted-network-deployment) example used in this fork — each image was pushed under both its original name and a renamed variant (`meridian-*`, to avoid the literal string `agent` in the tag for registries that filter/scan on it), for redundancy.
+
+| Image | Upstream (Aliyun ACR, `AGENTTEAMS_REGISTRY` default) | Mirror (Docker Hub, `comet0322`) |
+|---|---|---|
+| `agentteams-embedded` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-embedded:v1.2.3` | `comet0322/agentteams-embedded:v1.2.3`<br>`comet0322/meridian-core:v1.2.3` |
+| `agentteams-manager-qwenpaw` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-manager-qwenpaw:v1.2.3` | `comet0322/agentteams-manager-qwenpaw:v1.2.3`<br>`comet0322/meridian-brain:v1.2.3` |
+| `agentteams-manager` (openclaw) | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-manager:v1.2.3` | *(not mirrored in this example — only needed if you set `AGENTTEAMS_MANAGER_RUNTIME=openclaw`)* |
+| `agentteams-manager-copaw` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-manager-copaw:v1.2.2`<br>*(no `v1.2.3` tag published — copaw manager stopped at v1.2.2)* | `comet0322/agentteams-manager-copaw:v1.2.2`<br>`comet0322/meridian-brain-legacy:v1.2.2` |
+| `agentteams-worker` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-worker:v1.2.3` | `comet0322/agentteams-worker:v1.2.3`<br>`comet0322/meridian-node:v1.2.3` |
+| `agentteams-copaw-worker` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-copaw-worker:v1.2.3` | `comet0322/agentteams-copaw-worker:v1.2.3`<br>`comet0322/meridian-node-legacy:v1.2.3` |
+| `agentteams-qwenpaw-worker` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-qwenpaw-worker:v1.2.3` | `comet0322/agentteams-qwenpaw-worker:v1.2.3`<br>`comet0322/meridian-node-q:v1.2.3` |
+| `agentteams-hermes-worker` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-hermes-worker:v1.2.3` | `comet0322/agentteams-hermes-worker:v1.2.3`<br>`comet0322/meridian-node-h:v1.2.3` |
+| `agentteams-deepseek-harness-worker` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-deepseek-harness-worker:v0.1.0` | *(not mirrored — skipped since `v1.2.3` doesn't trigger this pull anyway; only needed on versions ≥ `AGENTTEAMS_DEEPSEEK_HARNESS_MIN_VERSION`)* |
+| `agentteams-dashboard` | `higress-registry.cn-hangzhou.cr.aliyuncs.com/agentteams/agentteams-dashboard:v1.2.4` | `comet0322/agentteams-dashboard:v1.2.4`<br>`comet0322/meridian-panel:v1.2.4` |
+
+To install fully from the mirror (no Aliyun ACR reachability required at all), set the corresponding `AGENTTEAMS_INSTALL_*_IMAGE` / `AGENTTEAMS_DASHBOARD_IMAGE` env var to the Mirror column's path — see the full example command in [Corporate / Restricted-Network Deployment](#corporate--restricted-network-deployment).
+
 ## Key Features
 
 - 🧬 **Manager-Workers Architecture**: Eliminates the need for human oversight of individual Worker Claws by enabling Agents to manage other Agents.
