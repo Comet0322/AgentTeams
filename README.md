@@ -3,8 +3,6 @@
   <br>
 </h1>
 
-[English](./README.md) | [中文](./README.zh-CN.md) | [日本語](./README.ja-JP.md)
-
 <p align="center">
   <a href="https://deepwiki.com/agentscope-ai/AgentTeams"><img src="https://img.shields.io/badge/DeepWiki-Ask_AI-navy.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==" alt="DeepWiki"></a>
   <a href="https://discord.com/invite/NVjNA4BAVw"><img src="https://img.shields.io/badge/Discord-Join_Us-blueviolet.svg?logo=discord" alt="Discord"></a>
@@ -15,6 +13,27 @@
 Built on a **Manager-Workers architecture**, AgentTeams features a Manager that centrally orchestrates multiple Workers, focusing on collaboration scenarios between humans and Agents, as well as among Agents within enterprise environments.
 
 AgentTeams does not compete with other Agent runtimes. Instead of implementing Agent logic itself, it orchestrates and manages multiple Agent containers (including the Manager and numerous Workers).
+
+## Container Images
+
+A default install pulls a handful of images from `agentteams/*` (Alibaba Cloud Container Registry by default; see [Corporate / Restricted-Network Deployment](#corporate--restricted-network-deployment) to mirror them elsewhere). Every image is defined by a Dockerfile in this repo — see the linked source for exactly what each one bundles.
+
+| Image | Built from | What it does | Required? |
+|---|---|---|---|
+| `agentteams-embedded` | [`agentteams-controller/Dockerfile.embedded`](agentteams-controller/Dockerfile.embedded) | All-in-one infra container: Tuwunel (Matrix homeserver), MinIO (object storage), Higress AI Gateway + Console, Element Web static files, and the `agentteams-controller` binary. This is the only supported architecture since v1.1.0 — it's what the Controller runs as. | **Always** |
+| `agentteams-controller` | [`agentteams-controller/Dockerfile`](agentteams-controller/Dockerfile) | Go controller/operator binary + `agt` CLI + embedded `kube-apiserver`, compiled from source. Not run standalone — its binaries get `COPY --from=`'d into `agentteams-embedded` and every Manager/Worker image so they can talk to the Controller's REST API. | **Always** (as a build layer) |
+| `agentteams-manager-qwenpaw` | [`manager/Dockerfile.qwenpaw`](manager/Dockerfile.qwenpaw) | Manager agent (the orchestrator) running the QwenPaw runtime — the default and recommended Manager runtime since v1.2.3. | Default |
+| `agentteams-manager` | [`manager/Dockerfile`](manager/Dockerfile) | Manager agent on the OpenClaw runtime. Only pulled if you explicitly set `AGENTTEAMS_MANAGER_RUNTIME=openclaw`. | Optional |
+| `agentteams-manager-copaw` | *(no current Dockerfile in this checkout — a legacy pre-embedded variant lives at [`manager/docker-legacy/Dockerfile.copaw-all-in-one`](manager/docker-legacy/Dockerfile.copaw-all-in-one), but that's a different architecture)* | Manager agent on the legacy CoPaw runtime. Only pulled if you explicitly set `AGENTTEAMS_MANAGER_RUNTIME=copaw`; published tags stop at v1.2.2. | Optional |
+| `agentteams-worker` | [`worker/Dockerfile`](worker/Dockerfile) | Default Worker agent, running the OpenClaw runtime. This is the runtime a Worker falls back to when no runtime is specified. | Default |
+| `agentteams-copaw-worker` | [`copaw/Dockerfile`](copaw/Dockerfile) | Worker agent on the CoPaw runtime — one of several interchangeable Worker runtimes that can coexist in the same Matrix room. | Optional (pulled unconditionally by the installer at some versions — see `install/agentteams-install.sh`) |
+| `agentteams-qwenpaw-worker` | [`qwenpaw/Dockerfile`](qwenpaw/Dockerfile) | Worker agent on the QwenPaw runtime. | Optional (pulled unconditionally, see above) |
+| `agentteams-hermes-worker` | [`hermes/Dockerfile`](hermes/Dockerfile) | Worker agent running Hermes, an autonomous coding agent runtime. | Optional (pulled unconditionally, see above) |
+| `agentteams-deepseek-harness-worker` | [`deepseek-harness/Dockerfile`](deepseek-harness/Dockerfile) | Experimental Worker runtime for DeepSeek Harness. Only pulled on versions that support it (`AGENTTEAMS_DEEPSEEK_HARNESS_MIN_VERSION`). | Experimental / optional |
+| `agentteams-dashboard` | versioned independently, see `AGENTTEAMS_DASHBOARD_IMAGE` | Web management UI for viewing Worker/Team status across the cluster — a monitoring/admin view, not a chat interface. Enabled by default; set `AGENTTEAMS_DASHBOARD=0` to skip it. | Default (skippable) |
+| `openclaw-base` | [`openclaw-base/Dockerfile`](openclaw-base/Dockerfile) | Base image (all-in-one + Node.js + OpenClaw + mcporter) that `agentteams-worker` builds on top of. Pulled from registry, not rebuilt locally, unless you're building images yourself. | Build-time base layer |
+
+There's also a separate `agentteams-embedded` vs. the individual `agentteams-manager-*` / `agentteams-*-worker` images you interact with day to day: the Controller (inside `agentteams-embedded`) dynamically creates and destroys Manager/Worker *containers* at runtime based on `Manager`/`Worker`/`Team` custom resources — see [How It Works](#how-it-works).
 
 ## Key Features
 
