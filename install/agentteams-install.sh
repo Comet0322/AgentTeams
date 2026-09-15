@@ -4173,6 +4173,54 @@ CREDEOF
             ${DOCKER_CMD} exec agentteams-manager touch /root/manager-workspace/yolo-mode 2>/dev/null || true
         fi
 
+        # Workaround for an upgrade-path gap in agentteams-controller: switching
+        # AGENTTEAMS_OPENAI_BASE_URL / AGENTTEAMS_DEFAULT_MODEL on an existing
+        # (upgraded) install updates the Higress WasmPlugin (ai-proxy) config
+        # correctly, but does not always propagate to (a) the McpBridge
+        # "openai-compat" registry's upstream domain, or (b) the Manager CR's
+        # spec.model — leaving the gateway connected to the *previous*
+        # provider's host, or the Manager requesting a model name that
+        # doesn't exist for the new provider. Both are silently non-fatal:
+        # the welcome-message probe just retries against the wrong upstream
+        # until AGENTTEAMS_WELCOME_TIMEOUT and the install still "succeeds".
+        # Force both in sync here on every run (idempotent — no-ops if
+        # already correct) so a provider switch actually takes effect.
+        sync_openai_compat_provider() {
+            [ "${AGENTTEAMS_USE_EMBEDDED}" = "1" ] || return 0
+            [ "${AGENTTEAMS_LLM_PROVIDER:-}" = "openai-compat" ] || return 0
+            [ -n "${AGENTTEAMS_OPENAI_BASE_URL:-}" ] || return 0
+            ${DOCKER_CMD} exec agentteams-controller sh -c 'command -v jq' >/dev/null 2>&1 || return 0
+
+            local _host
+            _host=$(printf '%s' "${AGENTTEAMS_OPENAI_BASE_URL}" | sed -E 's#^[a-zA-Z]+://##; s#[:/].*##')
+            [ -n "${_host}" ] || return 0
+
+            local _bridge_url="https://localhost:18443/apis/networking.higress.io/v1/namespaces/higress-system/mcpbridges/default"
+            local _current
+            _current=$(${DOCKER_CMD} exec agentteams-controller sh -c "curl -sk '${_bridge_url}'" 2>/dev/null)
+            if [ -n "${_current}" ]; then
+                local _cur_domain
+                _cur_domain=$(printf '%s' "${_current}" | ${DOCKER_CMD} exec -i agentteams-controller jq -r '.spec.registries[]? | select(.name=="openai-compat") | .domain' 2>/dev/null)
+                if [ -n "${_cur_domain}" ] && [ "${_cur_domain}" != "${_host}" ]; then
+                    log "Syncing Higress McpBridge openai-compat domain: ${_cur_domain} -> ${_host}"
+                    local _patched
+                    _patched=$(printf '%s' "${_current}" | ${DOCKER_CMD} exec -i agentteams-controller jq --arg host "${_host}" \
+                        '(.spec.registries[] | select(.name=="openai-compat") | .domain) = $host')
+                    printf '%s' "${_patched}" | ${DOCKER_CMD} exec -i agentteams-controller sh -c "curl -sk -X PUT '${_bridge_url}' -H 'Content-Type: application/json' --data-binary @-" >/dev/null 2>&1
+                fi
+            fi
+
+            if [ -n "${AGENTTEAMS_DEFAULT_MODEL:-}" ] && ${DOCKER_CMD} exec agentteams-controller sh -c 'command -v agt' >/dev/null 2>&1; then
+                local _cur_model
+                _cur_model=$(${DOCKER_CMD} exec agentteams-controller agt get managers default -o json 2>/dev/null | ${DOCKER_CMD} exec -i agentteams-controller jq -r '.model // empty' 2>/dev/null)
+                if [ -n "${_cur_model}" ] && [ "${_cur_model}" != "${AGENTTEAMS_DEFAULT_MODEL}" ]; then
+                    log "Syncing Manager CR model: ${_cur_model} -> ${AGENTTEAMS_DEFAULT_MODEL}"
+                    ${DOCKER_CMD} exec agentteams-controller agt update manager --name default --model "${AGENTTEAMS_DEFAULT_MODEL}" >/dev/null 2>&1
+                fi
+            fi
+        }
+        sync_openai_compat_provider
+
         # Wait for the controller to send the first-boot welcome message.
         # The controller gates this on (a) Manager joining the DM room and
         # (b) Higress WASM key-auth propagation actually clearing /v1/chat/completions
